@@ -1,0 +1,147 @@
+@model ExperimentAnalysisViewModel
+@{
+    ViewData["Title"] = Model.Experiment.ExperimentName;
+    ViewData["Subtitle"] = "Detailed statistical analysis of this experiment";
+    var ab = Model.AbTestResult;
+}
+
+<div class="mb-3">
+    <a asp-controller="Experiments" asp-action="Index" class="btn-outline-il btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Experiments
+    </a>
+</div>
+
+<h2 class="fw-bold mb-1">@Model.Experiment.ExperimentName Experiment</h2>
+<p class="text-muted mb-4">@Model.Experiment.Description</p>
+
+<!-- Variant comparison cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="stat-card variant-a">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">Variant A &mdash; Original</h5>
+                <span class="badge-status badge-variant-a">Control</span>
+            </div>
+            <div class="stat-row"><span class="stat-label">Participants</span><span class="stat-value">@ab.ParticipantsA.ToString("N0")</span></div>
+            <div class="stat-row"><span class="stat-label">Conversions</span><span class="stat-value">@ab.ConversionsA.ToString("N0")</span></div>
+            <div class="stat-row"><span class="stat-label">Conversion Rate</span><span class="stat-value">@((ab.ConversionRateA * 100).ToString("F2"))%</span></div>
+            <div class="stat-row"><span class="stat-label">Average Order Value</span><span class="stat-value">R@ab.MeanOrderValueA.ToString("N2")</span></div>
+            <div class="stat-row"><span class="stat-label">Median Order Value</span><span class="stat-value">R@Model.DescriptiveA.MedianOrderValue.ToString("N2")</span></div>
+            <div class="stat-row"><span class="stat-label">Std. Deviation</span><span class="stat-value">R@Model.DescriptiveA.StandardDeviation.ToString("N2")</span></div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="stat-card variant-b">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">Variant B &mdash; Challenger</h5>
+                <span class="badge-status badge-variant-b">Test</span>
+            </div>
+            <div class="stat-row"><span class="stat-label">Participants</span><span class="stat-value">@ab.ParticipantsB.ToString("N0")</span></div>
+            <div class="stat-row"><span class="stat-label">Conversions</span><span class="stat-value">@ab.ConversionsB.ToString("N0")</span></div>
+            <div class="stat-row"><span class="stat-label">Conversion Rate</span><span class="stat-value">@((ab.ConversionRateB * 100).ToString("F2"))%</span></div>
+            <div class="stat-row"><span class="stat-label">Average Order Value</span><span class="stat-value">R@ab.MeanOrderValueB.ToString("N2")</span></div>
+            <div class="stat-row"><span class="stat-label">Median Order Value</span><span class="stat-value">R@Model.DescriptiveB.MedianOrderValue.ToString("N2")</span></div>
+            <div class="stat-row"><span class="stat-label">Std. Deviation</span><span class="stat-value">R@Model.DescriptiveB.StandardDeviation.ToString("N2")</span></div>
+        </div>
+    </div>
+</div>
+
+<!-- Metric pills -->
+<div class="il-card mb-4">
+    <div class="section-title">Statistical Test Summary</div>
+    <div class="section-desc">Two-proportion Z-test comparing Variant A and Variant B conversion rates</div>
+    <div class="metric-pill-row">
+        <div class="metric-pill">
+            <div class="metric-label">Conversion Difference</div>
+            <div class="metric-value @(ab.ConversionDifference >= 0 ? "positive" : "negative")">
+                @(ab.ConversionDifference >= 0 ? "+" : "")@ab.ConversionDifference.ToString("F1")%
+            </div>
+        </div>
+        <div class="metric-pill">
+            <div class="metric-label">Relative Improvement</div>
+            <div class="metric-value @(ab.RelativeImprovement >= 0 ? "positive" : "negative")">
+                @(ab.RelativeImprovement >= 0 ? "+" : "")@ab.RelativeImprovement.ToString("F1")%
+            </div>
+        </div>
+        <div class="metric-pill">
+            <div class="metric-label">Z-Score</div>
+            <div class="metric-value">@ab.ZScore.ToString("F2")</div>
+        </div>
+        <div class="metric-pill">
+            <div class="metric-label">P-Value</div>
+            <div class="metric-value">@ab.PValue.ToString("F4")</div>
+        </div>
+        <div class="metric-pill">
+            <div class="metric-label">Significance Level</div>
+            <div class="metric-value">@ab.SignificanceLevel.ToString("F2")</div>
+        </div>
+        <div class="metric-pill">
+            <div class="metric-label">Confidence Level</div>
+            <div class="metric-value">@ab.ConfidenceLevel.ToString("F0")%</div>
+        </div>
+    </div>
+</div>
+
+<!-- Result card -->
+<div class="result-card @(ab.IsStatisticallySignificant ? "significant" : "not-significant") mb-4">
+    <div class="result-icon">🧪</div>
+    <h3>Statistical Test Result</h3>
+    @if (ab.IsStatisticallySignificant)
+    {
+        <p><strong>Variant @ab.WinningVariant performed significantly better than Variant @(ab.WinningVariant == "A" ? "B" : "A").</strong></p>
+        <p>The difference in conversion rate (P-Value @ab.PValue.ToString("F4")) is unlikely to have occurred by random chance at the @ab.ConfidenceLevel.ToString("F0")% confidence level.</p>
+        <div class="recommendation">
+            <i class="bi bi-lightbulb-fill"></i> Recommendation: Consider implementing Variant @ab.WinningVariant.
+        </div>
+    }
+    else
+    {
+        <p><strong>There is not enough statistical evidence to conclude that one variant performs better.</strong></p>
+        <p>The observed difference (P-Value @ab.PValue.ToString("F4")) could plausibly be due to random chance at the @ab.ConfidenceLevel.ToString("F0")% confidence level.</p>
+        <div class="recommendation">
+            <i class="bi bi-lightbulb-fill"></i> Recommendation: Continue testing or collect more data.
+        </div>
+    }
+</div>
+
+<!-- Charts -->
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="il-card h-100">
+            <div class="section-title">Conversion Rate Comparison</div>
+            <div class="chart-wrap">
+                <canvas id="detailConversionChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="il-card h-100">
+            <div class="section-title">Daily Conversions</div>
+            <div class="chart-wrap">
+                <canvas id="dailyConversionsChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="il-card h-100">
+            <div class="section-title">Average Order Value</div>
+            <div class="chart-wrap">
+                <canvas id="orderValueChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const dailyLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyConversions.Select(d => d.Date.ToString("dd MMM"))));
+        const dailySeriesA = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyConversions.Select(d => d.VariantAConversions)));
+        const dailySeriesB = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyConversions.Select(d => d.VariantBConversions)));
+
+        document.addEventListener("DOMContentLoaded", function () {
+            createDetailConversionChart("detailConversionChart", @((ab.ConversionRateA * 100).ToString("F2", System.Globalization.CultureInfo.InvariantCulture)), @((ab.ConversionRateB * 100).ToString("F2", System.Globalization.CultureInfo.InvariantCulture)));
+            createDailyConversionsChart("dailyConversionsChart", dailyLabels, dailySeriesA, dailySeriesB);
+            createOrderValueChart("orderValueChart", @ab.MeanOrderValueA.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), @ab.MeanOrderValueB.ToString("F2", System.Globalization.CultureInfo.InvariantCulture));
+        });
+    </script>
+}

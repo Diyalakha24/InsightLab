@@ -1,0 +1,15 @@
+@model string
+@{
+    ViewData["Title"] = "Error";
+}
+
+<div class="il-card text-center py-5">
+    <div style="font-size:2.5rem;" class="mb-3">⚠️</div>
+    <h2 class="fw-bold">Something went wrong</h2>
+    <p class="text-muted">An unexpected error occurred while processing your request.</p>
+    @if (!string.IsNullOrEmpty(Model))
+    {
+        <p class="text-muted small">Request ID: <code>@Model</code></p>
+    }
+    <a asp-controller="Dashboard" asp-action="Index" class="btn-primary-il">Back to Dashboard</a>
+</div>

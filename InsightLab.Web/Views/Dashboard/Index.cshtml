@@ -1,0 +1,147 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    ViewData["Subtitle"] = "A snapshot of every A/B test currently tracked in InsightLab";
+}
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-xl-3">
+        <div class="kpi-card">
+            <div class="kpi-icon blue"><i class="bi bi-flask-fill"></i></div>
+            <div>
+                <div class="kpi-label">Total Experiments</div>
+                <div class="kpi-value">@Model.TotalExperiments</div>
+                <div class="kpi-sub">Active &amp; completed tests</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="kpi-card">
+            <div class="kpi-icon purple"><i class="bi bi-people-fill"></i></div>
+            <div>
+                <div class="kpi-label">Total Participants</div>
+                <div class="kpi-value">@Model.TotalParticipants.ToString("N0")</div>
+                <div class="kpi-sub">Across all experiments</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="kpi-card">
+            <div class="kpi-icon green"><i class="bi bi-graph-up-arrow"></i></div>
+            <div>
+                <div class="kpi-label">Overall Conversion Rate</div>
+                <div class="kpi-value">@((Model.OverallConversionRate * 100).ToString("F2"))%</div>
+                <div class="kpi-sub">Blended across A &amp; B</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="kpi-card">
+            <div class="kpi-icon amber"><i class="bi bi-trophy-fill"></i></div>
+            <div>
+                <div class="kpi-label">Best Performing Variant</div>
+                <div class="kpi-value">@Model.BestPerformingVariant</div>
+                <div class="kpi-sub">By experiments won</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-7">
+        <div class="il-card h-100">
+            <div class="section-title">Conversion Rate by Experiment</div>
+            <div class="section-desc">Variant A vs Variant B, side by side</div>
+            <div class="chart-wrap">
+                <canvas id="conversionRateChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="il-card h-100">
+            <div class="section-title">Experiment Performance Overview</div>
+            <div class="section-desc">Conversion rates across all experiments</div>
+            <div class="chart-wrap">
+                <canvas id="performanceRadarChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Experiment Results -->
+<div class="il-card">
+    <div class="section-title">Recent Experiment Results</div>
+    <div class="section-desc">Statistical outcome of every experiment based on a two-proportion Z-test</div>
+
+    <div class="table-responsive">
+        <table class="table-il">
+            <thead>
+                <tr>
+                    <th>Experiment</th>
+                    <th>Variant Winner</th>
+                    <th class="text-end">Conversion Difference</th>
+                    <th>Result</th>
+                    <th class="text-end">Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var exp in Model.ExperimentSummaries)
+                {
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">@exp.ExperimentName</div>
+                            <div class="text-muted small">@exp.TotalParticipants.ToString("N0") participants</div>
+                        </td>
+                        <td>
+                            @if (exp.WinningVariant == "A")
+                            {
+                                <span class="badge-status badge-variant-a">Variant A Wins</span>
+                            }
+                            else if (exp.WinningVariant == "B")
+                            {
+                                <span class="badge-status badge-variant-b">Variant B Wins</span>
+                            }
+                            else
+                            {
+                                <span class="badge-status badge-tie">Tie</span>
+                            }
+                        </td>
+                        <td class="text-end fw-semibold @(exp.ConversionDifference >= 0 ? "text-success" : "text-danger")">
+                            @(exp.ConversionDifference >= 0 ? "+" : "")@exp.ConversionDifference.ToString("F1")%
+                        </td>
+                        <td>
+                            @if (exp.IsStatisticallySignificant)
+                            {
+                                <span class="badge-status badge-significant"><i class="bi bi-check-circle-fill"></i> Significant</span>
+                            }
+                            else
+                            {
+                                <span class="badge-status badge-not-significant"><i class="bi bi-dash-circle"></i> Not Significant</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <a asp-controller="Experiments" asp-action="Details" asp-route-id="@exp.ExperimentId" class="btn-outline-il btn-sm">
+                                View Analysis
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const dashboardLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ExperimentSummaries.Select(e => e.ExperimentName)));
+        const dashboardRatesA = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ExperimentSummaries.Select(e => Math.Round(e.ConversionRateA * 100, 2))));
+        const dashboardRatesB = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ExperimentSummaries.Select(e => Math.Round(e.ConversionRateB * 100, 2))));
+
+        document.addEventListener("DOMContentLoaded", function () {
+            createConversionRateBarChart("conversionRateChart", dashboardLabels, dashboardRatesA, dashboardRatesB);
+            createPerformanceRadarChart("performanceRadarChart", dashboardLabels, dashboardRatesA, dashboardRatesB);
+        });
+    </script>
+}

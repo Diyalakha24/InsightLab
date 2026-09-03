@@ -1,0 +1,156 @@
+@model DataExplorerViewModel
+@{
+    ViewData["Title"] = "Data Explorer";
+    ViewData["Subtitle"] = "Browse and filter the raw participant-level data behind every experiment";
+}
+
+<div class="filter-bar">
+    <form method="get" asp-controller="DataExplorer" asp-action="Index" class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label small fw-semibold">Experiment</label>
+            <select name="experimentId" class="form-select">
+                <option value="">All Experiments</option>
+                @foreach (var exp in Model.AllExperiments)
+                {
+                    <option value="@exp.ExperimentId" selected="@(Model.SelectedExperimentId == exp.ExperimentId)">@exp.ExperimentName</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small fw-semibold">Variant</label>
+            <select name="variant" class="form-select">
+                <option value="">All</option>
+                <option value="A" selected="@(Model.SelectedVariant == "A")">Variant A</option>
+                <option value="B" selected="@(Model.SelectedVariant == "B")">Variant B</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small fw-semibold">Conversion</label>
+            <select name="conversionStatus" class="form-select">
+                <option value="">All</option>
+                <option value="Converted" selected="@(Model.SelectedConversionStatus == "Converted")">Converted</option>
+                <option value="NotConverted" selected="@(Model.SelectedConversionStatus == "NotConverted")">Not Converted</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small fw-semibold">Search</label>
+            <input type="text" name="search" class="form-control" placeholder="Session ID or experiment name" value="@Model.SearchTerm" />
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn-primary-il flex-fill"><i class="bi bi-funnel-fill"></i> Filter</button>
+            <a asp-controller="DataExplorer" asp-action="Index" class="btn-outline-il" title="Clear filters"><i class="bi bi-x-lg"></i></a>
+        </div>
+    </form>
+</div>
+
+<div class="il-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <div class="section-title mb-0">Participant Records</div>
+            <div class="section-desc mb-0">@Model.TotalMatchingRows.ToString("N0") matching rows</div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table-il">
+            <thead>
+                <tr>
+                    <th>Session ID</th>
+                    <th>Experiment</th>
+                    <th>Variant</th>
+                    <th>Date</th>
+                    <th>Converted</th>
+                    <th class="text-end">Order Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Participants.Any())
+                {
+                    <tr><td colspan="6" class="text-center text-muted py-4">No records match your filters.</td></tr>
+                }
+                @foreach (var row in Model.Participants)
+                {
+                    <tr>
+                        <td class="font-monospace small">@row.SessionId</td>
+                        <td>@row.ExperimentName</td>
+                        <td>
+                            @if (row.Variant == "A")
+                            {
+                                <span class="badge-status badge-variant-a">Variant A</span>
+                            }
+                            else
+                            {
+                                <span class="badge-status badge-variant-b">Variant B</span>
+                            }
+                        </td>
+                        <td>@row.SessionDate.ToString("dd MMM yyyy HH:mm")</td>
+                        <td>
+                            @if (row.Converted)
+                            {
+                                <span class="badge-status badge-significant"><i class="bi bi-check-lg"></i> Yes</span>
+                            }
+                            else
+                            {
+                                <span class="badge-status badge-not-significant">No</span>
+                            }
+                        </td>
+                        <td class="text-end">@(row.Converted ? "R" + row.OrderValue.ToString("N2") : "—")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        int windowStart = Math.Max(1, Model.PageNumber - 2);
+        int windowEnd = Math.Min(Model.TotalPages, Model.PageNumber + 2);
+
+        <div class="il-pagination">
+            @if (Model.PageNumber > 1)
+            {
+                <a asp-controller="DataExplorer" asp-action="Index" asp-route-page="@(Model.PageNumber - 1)"
+                   asp-route-experimentId="@Model.SelectedExperimentId" asp-route-variant="@Model.SelectedVariant"
+                   asp-route-conversionStatus="@Model.SelectedConversionStatus" asp-route-search="@Model.SearchTerm">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            }
+
+            @if (windowStart > 1)
+            {
+                <a asp-controller="DataExplorer" asp-action="Index" asp-route-page="1"
+                   asp-route-experimentId="@Model.SelectedExperimentId" asp-route-variant="@Model.SelectedVariant"
+                   asp-route-conversionStatus="@Model.SelectedConversionStatus" asp-route-search="@Model.SearchTerm">1</a>
+                <span>&hellip;</span>
+            }
+
+            @for (int p = windowStart; p <= windowEnd; p++)
+            {
+                <a class="@(p == Model.PageNumber ? "active" : "")"
+                   asp-controller="DataExplorer" asp-action="Index"
+                   asp-route-page="@p"
+                   asp-route-experimentId="@Model.SelectedExperimentId"
+                   asp-route-variant="@Model.SelectedVariant"
+                   asp-route-conversionStatus="@Model.SelectedConversionStatus"
+                   asp-route-search="@Model.SearchTerm">@p</a>
+            }
+
+            @if (windowEnd < Model.TotalPages)
+            {
+                <span>&hellip;</span>
+                <a asp-controller="DataExplorer" asp-action="Index" asp-route-page="@Model.TotalPages"
+                   asp-route-experimentId="@Model.SelectedExperimentId" asp-route-variant="@Model.SelectedVariant"
+                   asp-route-conversionStatus="@Model.SelectedConversionStatus" asp-route-search="@Model.SearchTerm">@Model.TotalPages</a>
+            }
+
+            @if (Model.PageNumber < Model.TotalPages)
+            {
+                <a asp-controller="DataExplorer" asp-action="Index" asp-route-page="@(Model.PageNumber + 1)"
+                   asp-route-experimentId="@Model.SelectedExperimentId" asp-route-variant="@Model.SelectedVariant"
+                   asp-route-conversionStatus="@Model.SelectedConversionStatus" asp-route-search="@Model.SearchTerm">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            }
+        </div>
+    }
+</div>

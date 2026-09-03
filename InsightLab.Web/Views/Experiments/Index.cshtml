@@ -1,0 +1,68 @@
+@model List<ExperimentSummaryViewModel>
+@{
+    ViewData["Title"] = "Experiments";
+    ViewData["Subtitle"] = "All A/B testing experiments tracked in InsightLab";
+}
+
+<div class="row g-4">
+    @foreach (var exp in Model)
+    {
+        <div class="col-md-6 col-xl-4">
+            <div class="experiment-card">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                    <div class="exp-title">@exp.ExperimentName</div>
+                    @if (exp.IsStatisticallySignificant)
+                    {
+                        <span class="badge-status badge-significant">Significant</span>
+                    }
+                    else
+                    {
+                        <span class="badge-status badge-not-significant">Not Significant</span>
+                    }
+                </div>
+                <div class="exp-desc">@exp.Description</div>
+
+                <div class="exp-meta">
+                    <span><i class="bi bi-calendar3"></i>@exp.StartDate.ToString("dd MMM")&ndash;@exp.EndDate.ToString("dd MMM yyyy")</span>
+                    <span><i class="bi bi-people"></i>@exp.TotalParticipants.ToString("N0") participants</span>
+                </div>
+
+                <div class="variant-compare">
+                    <div class="variant-box @(exp.WinningVariant == "A" ? "winner" : "")">
+                        <div class="variant-label">Variant A</div>
+                        <div class="variant-rate">@((exp.ConversionRateA * 100).ToString("F1"))%</div>
+                    </div>
+                    <div class="variant-box @(exp.WinningVariant == "B" ? "winner" : "")">
+                        <div class="variant-label">Variant B</div>
+                        <div class="variant-rate">@((exp.ConversionRateB * 100).ToString("F1"))%</div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small">Improvement</span>
+                    <span class="fw-bold @(exp.ConversionDifference >= 0 ? "text-success" : "text-danger")">
+                        @(exp.ConversionDifference >= 0 ? "+" : "")@exp.ConversionDifference.ToString("F1")%
+                    </span>
+                </div>
+
+                <div class="exp-footer">
+                    @if (exp.WinningVariant == "A")
+                    {
+                        <span class="badge-status badge-variant-a">Variant A Wins</span>
+                    }
+                    else if (exp.WinningVariant == "B")
+                    {
+                        <span class="badge-status badge-variant-b">Variant B Wins</span>
+                    }
+                    else
+                    {
+                        <span class="badge-status badge-tie">Tie</span>
+                    }
+                    <a asp-controller="Experiments" asp-action="Details" asp-route-id="@exp.ExperimentId" class="btn-primary-il btn-sm">
+                        View Analysis <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
