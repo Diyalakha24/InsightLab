@@ -12,7 +12,6 @@ It answers one of the most important questions for product and data teams:
 
 The application combines **data analysis, descriptive statistics, hypothesis testing, SQL databases, and interactive visualisation** inside a full-stack ASP.NET Core MVC application.
 
-Built as a portfolio project for **Junior Data Analyst, Junior BI Analyst, and data-focused graduate roles**.
 
 ---
 
@@ -765,11 +764,21 @@ You can later add the images directly to this section:
 ```markdown
 ## 📊 Dashboard Preview
 
-![InsightLab Dashboard](screenshots/dashboard.png)
+<img width="1600" height="722" alt="image" src="https://github.com/user-attachments/assets/e253d91c-2ad8-4930-a991-c46ea6a7ada6" />
+
+<img width="1600" height="726" alt="image" src="https://github.com/user-attachments/assets/781ce06b-268a-45b8-ac83-db0a5ca59953" />
+
 
 ## 🧪 Experiment Analysis
 
-![Experiment Analysis](screenshots/experiment-analysis.png)
+<img width="1600" height="717" alt="image" src="https://github.com/user-attachments/assets/8d61ac41-509b-4430-9f49-ba6f3c9e0ca6" />
+
+<img width="1600" height="728" alt="image" src="https://github.com/user-attachments/assets/35ce956d-9e05-4cb0-b4e3-025483aaee0a" />
+
+<img width="1600" height="728" alt="image" src="https://github.com/user-attachments/assets/069e3817-d40c-437b-a9d2-81871dc639bc" />
+
+<img width="1600" height="719" alt="image" src="https://github.com/user-attachments/assets/775d2ee5-c4c7-49bb-95f2-7f88c669c439" />
+
 ```
 
 ---
@@ -853,14 +862,6 @@ Determine Statistical Significance
        ↓
 Generate Business Recommendation
 ```
-
----
-
-# 💬 Interview Talking Points
-
-A simple way to describe this project in an interview:
-
-> **“I built InsightLab, an A/B testing and statistical analysis dashboard using ASP.NET Core MVC, C# and SQL Server. The application simulates business experiments and compares two variants using descriptive statistics and a two-proportion Z-test. It calculates conversion rates, Z-scores and P-values to determine whether performance differences are statistically significant, then presents the results through an interactive dashboard and business recommendation.”**
 
 ---
 
@@ -948,9 +949,7 @@ InsightLab combines:
 📈 Data Visualisation
       =
 🚀 InsightLab
-```
 
-**From raw experiment data → to statistically supported business decisions.**
 
 ---
 
