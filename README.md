@@ -748,22 +748,7 @@ Capture:
 
 ---
 
-## Suggested Screenshot Structure
-
-```text
-README.md
-│
-├── Dashboard Screenshot
-├── Experiments Screenshot
-├── Statistical Analysis Screenshot
-└── Data Explorer Screenshot
-```
-
-You can later add the images directly to this section:
-
-```markdown
-## 📊 Dashboard Preview
-
+## Screenshots:
 <img width="1600" height="722" alt="image" src="https://github.com/user-attachments/assets/e253d91c-2ad8-4930-a991-c46ea6a7ada6" />
 
 <img width="1600" height="726" alt="image" src="https://github.com/user-attachments/assets/781ce06b-268a-45b8-ac83-db0a5ca59953" />
@@ -778,6 +763,12 @@ You can later add the images directly to this section:
 <img width="1600" height="728" alt="image" src="https://github.com/user-attachments/assets/069e3817-d40c-437b-a9d2-81871dc639bc" />
 
 <img width="1600" height="719" alt="image" src="https://github.com/user-attachments/assets/775d2ee5-c4c7-49bb-95f2-7f88c669c439" />
+
+
+
+
+
+
 
 ```
 
